@@ -1,0 +1,63 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = "postgresql://postgres:1234@localhost:5432/dgac?schema=public"
+}
+
+model Book {
+  id            String   @id @default(cuid())
+  title         String
+  author        String
+  isbn          String   @unique
+  category      String
+  publisher     String
+  publishedYear Int
+  availableCopies Int
+  totalCopies   Int
+  location      String
+  description   String?
+  coverImage    String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  loans         Loan[]
+}
+
+model User {
+  id          String   @id @default(cuid())
+  name        String
+  email       String   @unique
+  phone       String
+  userType    String   // "Piloto", "Personal Técnico", "Personal Administrativo"
+  department  String
+  status      String   @default("Activo") // "Activo", "Inactivo"
+  memberSince DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  loans       Loan[]
+}
+
+model Loan {
+  id          String   @id @default(cuid())
+  bookId      String
+  userId      String
+  loanDate    DateTime @default(now())
+  dueDate     DateTime
+  returnDate  DateTime?
+  status      String   @default("Activo") // "Activo", "Vencido", "Devuelto"
+  renewalCount Int     @default(0)
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  book        Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([bookId])
+  @@index([userId])
+  @@index([status])
+}
